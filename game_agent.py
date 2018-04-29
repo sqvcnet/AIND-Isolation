@@ -9,16 +9,6 @@ class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
     pass
 
-call_counter = 0
-def terminal_test(game):
-    """ Return True if the game is over for the active player
-    and False otherwise.
-    """
-    # NOTE: do NOT modify this function
-    global call_counter
-    call_counter += 1
-    moves_available = bool(game.get_legal_moves())  # by Assumption 1
-    return not moves_available
 
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -45,7 +35,15 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return float(own_moves - opp_moves)
 
 
 def custom_score_2(game, player):
@@ -71,7 +69,15 @@ def custom_score_2(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return float(own_moves - opp_moves)
 
 
 def custom_score_3(game, player):
@@ -97,7 +103,15 @@ def custom_score_3(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    own_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    return float(own_moves - opp_moves)
 
 
 class IsolationPlayer:
@@ -227,16 +241,9 @@ class MinimaxPlayer(IsolationPlayer):
             if self.time_left() < self.TIMER_THRESHOLD:
                 raise SearchTimeout()
 
-            """ Return the value for a win (+1) if the game is over,
-            otherwise return the minimum value over all legal child
-            nodes.
-            """
-            if terminal_test(game):
-                return 1  # by Assumption 2
-
             # New conditional depth limit cutoff
             if depth <= 0:  # "==" could be used, but "<=" is safer
-                return 0
+                return self.score(game, self)
 
             v = float("inf")
             for m in game.get_legal_moves():
@@ -248,16 +255,9 @@ class MinimaxPlayer(IsolationPlayer):
             if self.time_left() < self.TIMER_THRESHOLD:
                 raise SearchTimeout()
 
-            """ Return the value for a loss (-1) if the game is over,
-            otherwise return the maximum value over all legal child
-            nodes.
-            """
-            if terminal_test(game):
-                return -1  # by assumption 2
-
             # New conditional depth limit cutoff
             if depth <= 0:  # "==" could be used, but "<=" is safer
-                return 0
+                return self.score(game, self)
 
             v = float("-inf")
             for m in game.get_legal_moves():
@@ -383,16 +383,9 @@ class AlphaBetaPlayer(IsolationPlayer):
             if self.time_left() < self.TIMER_THRESHOLD:
                 raise SearchTimeout()
 
-            """ Return the value for a win (+1) if the game is over,
-            otherwise return the minimum value over all legal child
-            nodes.
-            """
-            if terminal_test(game):
-                return 1  # by Assumption 2
-
             # New conditional depth limit cutoff
             if depth <= 0:  # "==" could be used, but "<=" is safer
-                return 0
+                return self.score(game, self)
 
             v = float("inf")
             for m in game.get_legal_moves():
@@ -408,16 +401,9 @@ class AlphaBetaPlayer(IsolationPlayer):
             if self.time_left() < self.TIMER_THRESHOLD:
                 raise SearchTimeout()
 
-            """ Return the value for a loss (-1) if the game is over,
-            otherwise return the maximum value over all legal child
-            nodes.
-            """
-            if terminal_test(game):
-                return -1  # by assumption 2
-
             # New conditional depth limit cutoff
             if depth <= 0:  # "==" could be used, but "<=" is safer
-                return 0
+                return self.score(game, self)
 
             v = float("-inf")
             for m in game.get_legal_moves():
