@@ -9,6 +9,16 @@ class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
     pass
 
+call_counter = 0
+def terminal_test(game):
+    """ Return True if the game is over for the active player
+    and False otherwise.
+    """
+    # NOTE: do NOT modify this function
+    global call_counter
+    call_counter += 1
+    moves_available = bool(game.get_legal_moves())  # by Assumption 1
+    return not moves_available
 
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -213,7 +223,56 @@ class MinimaxPlayer(IsolationPlayer):
             raise SearchTimeout()
 
         # TODO: finish this function!
-        raise NotImplementedError
+        def min_value(game, depth):
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+
+            """ Return the value for a win (+1) if the game is over,
+            otherwise return the minimum value over all legal child
+            nodes.
+            """
+            if terminal_test(game):
+                return 1  # by Assumption 2
+
+            # New conditional depth limit cutoff
+            if depth <= 0:  # "==" could be used, but "<=" is safer
+                return 0
+
+            v = float("inf")
+            for m in game.get_legal_moves():
+                # the depth should be decremented by 1 on each call
+                v = min(v, max_value(game.forecast_move(m), depth - 1))
+            return v
+
+        def max_value(game, depth):
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+
+            """ Return the value for a loss (-1) if the game is over,
+            otherwise return the maximum value over all legal child
+            nodes.
+            """
+            if terminal_test(game):
+                return -1  # by assumption 2
+
+            # New conditional depth limit cutoff
+            if depth <= 0:  # "==" could be used, but "<=" is safer
+                return 0
+
+            v = float("-inf")
+            for m in game.get_legal_moves():
+                # the depth should be decremented by 1 on each call
+                v = max(v, min_value(game.forecast_move(m), depth - 1))
+            return v
+
+        best_score = float("-inf")
+        best_move = None
+        for m in game.get_legal_moves():
+            v = min_value(game.forecast_move(m), depth - 1)
+            if v > best_score:
+                best_score = v
+                best_move = m
+        return best_move
 
 
 class AlphaBetaPlayer(IsolationPlayer):
@@ -255,7 +314,21 @@ class AlphaBetaPlayer(IsolationPlayer):
         self.time_left = time_left
 
         # TODO: finish this function!
-        raise NotImplementedError
+        # Initialize the best move so that this function returns something
+        # in case the search fails due to timeout
+        best_move = (-1, -1)
+
+        try:
+            # The try/except block will automatically catch the exception
+            # raised when the timer is about to expire.
+            for i in range(self.search_depth):
+                best_move = self.alphabeta(game, i + 1)
+
+        except SearchTimeout:
+            pass  # Handle any actions required after timeout as needed
+
+        # Return the best move from the last completed search iteration
+        return best_move
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf")):
         """Implement depth-limited minimax search with alpha-beta pruning as
@@ -306,4 +379,68 @@ class AlphaBetaPlayer(IsolationPlayer):
             raise SearchTimeout()
 
         # TODO: finish this function!
-        raise NotImplementedError
+        def min_value(game, depth, alpha, beta):
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+
+            """ Return the value for a win (+1) if the game is over,
+            otherwise return the minimum value over all legal child
+            nodes.
+            """
+            if terminal_test(game):
+                return 1  # by Assumption 2
+
+            # New conditional depth limit cutoff
+            if depth <= 0:  # "==" could be used, but "<=" is safer
+                return 0
+
+            v = float("inf")
+            for m in game.get_legal_moves():
+                # the depth should be decremented by 1 on each call
+                v = min(v, max_value(game.forecast_move(m), depth - 1, alpha, beta))
+                if v <= alpha:
+                    return v
+                beta = min(beta, v)
+
+            return v
+
+        def max_value(game, depth, alpha, beta):
+            if self.time_left() < self.TIMER_THRESHOLD:
+                raise SearchTimeout()
+
+            """ Return the value for a loss (-1) if the game is over,
+            otherwise return the maximum value over all legal child
+            nodes.
+            """
+            if terminal_test(game):
+                return -1  # by assumption 2
+
+            # New conditional depth limit cutoff
+            if depth <= 0:  # "==" could be used, but "<=" is safer
+                return 0
+
+            v = float("-inf")
+            for m in game.get_legal_moves():
+                if self.time_left() < self.TIMER_THRESHOLD:
+                    raise SearchTimeout()
+                # the depth should be decremented by 1 on each call
+                v = max(v, min_value(game.forecast_move(m), depth - 1, alpha, beta))
+                if (v >= beta):
+                    return v
+                alpha = max(alpha, v)
+
+            return v
+
+        best_score = float("-inf")
+        best_move = None
+        for m in game.get_legal_moves():
+            # the depth should be decremented by 1 on each call
+            v = min_value(game.forecast_move(m), depth - 1, alpha, beta)
+            # if (v >= beta):
+            #     return m
+            if v > best_score:
+                best_score = v
+                best_move = m
+            alpha = max(alpha, v)
+
+        return best_move
