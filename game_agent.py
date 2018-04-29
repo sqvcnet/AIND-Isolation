@@ -9,6 +9,19 @@ class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
     pass
 
+def avg_dist_to_center(game, moves):
+    if (len(moves) <= 0):
+        return 0.0
+
+    sum = 0.0
+    w, h = game.width / 2., game.height / 2.
+    for i in range(len(moves)):
+        move = moves[i]
+        y, x = move
+        sum += float((h - y)**2 + (w - x)**2)
+    sum /= len(moves)
+
+    return sum
 
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -35,15 +48,13 @@ def custom_score(game, player):
         The heuristic value of the current game state to the specified player.
     """
     # TODO: finish this function!
-    if game.is_loser(player):
-        return float("-inf")
+    own_moves = game.get_legal_moves(player)
+    opp_moves = game.get_legal_moves(game.get_opponent(player))
 
-    if game.is_winner(player):
-        return float("inf")
+    own_dist = avg_dist_to_center(game, own_moves)
+    opp_dist = avg_dist_to_center(game, opp_moves)
 
-    own_moves = len(game.get_legal_moves(player))
-    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(own_moves - opp_moves)
+    return (opp_dist - own_dist)
 
 
 def custom_score_2(game, player):
@@ -75,9 +86,14 @@ def custom_score_2(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    own_moves = len(game.get_legal_moves(player))
-    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(own_moves - opp_moves)
+    own_moves = game.get_legal_moves(player)
+    opp_moves = game.get_legal_moves(game.get_opponent(player))
+    diff = float(len(own_moves) - len(opp_moves))
+
+    own_dist = avg_dist_to_center(game, own_moves)
+    opp_dist = avg_dist_to_center(game, opp_moves)
+
+    return diff + (opp_dist - own_dist)
 
 
 def custom_score_3(game, player):
@@ -109,15 +125,16 @@ def custom_score_3(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    own_moves = len(game.get_legal_moves(player))
-    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    diff = float(own_moves - opp_moves)
+    own_moves = game.get_legal_moves(player)
+    opp_moves = game.get_legal_moves(game.get_opponent(player))
+    diff = float(len(own_moves) - len(opp_moves))
 
     w, h = game.width / 2., game.height / 2.
     y, x = game.get_player_location(player)
     dist = float((h - y)**2 + (w - x)**2)
+    dist = (w**2 + h**2) - dist
 
-    return diff * 0.7 + dist * 0.3
+    return diff * dist
 
 
 class IsolationPlayer:
