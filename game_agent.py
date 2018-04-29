@@ -111,7 +111,13 @@ def custom_score_3(game, player):
 
     own_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
-    return float(own_moves - opp_moves)
+    diff = float(own_moves - opp_moves)
+
+    w, h = game.width / 2., game.height / 2.
+    y, x = game.get_player_location(player)
+    dist = float((h - y)**2 + (w - x)**2)
+
+    return diff * 0.7 + dist * 0.3
 
 
 class IsolationPlayer:
@@ -136,6 +142,7 @@ class IsolationPlayer:
         positive value large enough to allow the function to return before the
         timer expires.
     """
+
     def __init__(self, search_depth=3, score_fn=custom_score, timeout=10.):
         self.search_depth = search_depth
         self.score = score_fn
@@ -321,8 +328,10 @@ class AlphaBetaPlayer(IsolationPlayer):
         try:
             # The try/except block will automatically catch the exception
             # raised when the timer is about to expire.
-            for i in range(self.search_depth):
-                best_move = self.alphabeta(game, i + 1)
+            i = 1
+            while (True):
+                best_move = self.alphabeta(game, i)
+                i = i + 1
 
         except SearchTimeout:
             pass  # Handle any actions required after timeout as needed
