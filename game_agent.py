@@ -23,6 +23,14 @@ def avg_dist_to_center(game, moves):
 
     return sum
 
+
+def dist_to_center(game, player):
+    w, h = game.width / 2., game.height / 2.
+    y, x = game.get_player_location(player)
+    dist = float((h - y)**2 + (w - x)**2)
+    return (w**2 + h**2) - dist
+
+
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
@@ -58,12 +66,10 @@ def custom_score(game, player):
     opp_moves = game.get_legal_moves(game.get_opponent(player))
     diff = float(len(own_moves) - len(opp_moves))
 
-    w, h = game.width / 2., game.height / 2.
-    y, x = game.get_player_location(player)
-    dist = float((h - y)**2 + (w - x)**2)
-    dist = (w**2 + h**2) - dist
+    own_dist = dist_to_center(game, player)
+    opp_dist = dist_to_center(game, game.get_opponent(player))
 
-    return diff * dist
+    return diff * (opp_dist - own_dist)
 
 
 def custom_score_2(game, player):
@@ -95,14 +101,10 @@ def custom_score_2(game, player):
     if game.is_winner(player):
         return float("inf")
 
-    own_moves = game.get_legal_moves(player)
-    opp_moves = game.get_legal_moves(game.get_opponent(player))
-    diff = float(len(own_moves) - len(opp_moves))
+    own_dist = dist_to_center(game, player)
+    opp_dist = dist_to_center(game, game.get_opponent(player))
 
-    own_dist = avg_dist_to_center(game, own_moves)
-    opp_dist = avg_dist_to_center(game, opp_moves)
-
-    return diff + (opp_dist - own_dist)
+    return (opp_dist - own_dist)
 
 
 def custom_score_3(game, player):
@@ -198,7 +200,7 @@ class IsolationPlayer:
         timer expires.
     """
 
-    def __init__(self, search_depth=3, score_fn=custom_score, timeout=15.):
+    def __init__(self, search_depth=3, score_fn=custom_score, timeout=20.):
         self.search_depth = search_depth
         self.score = score_fn
         self.time_left = None

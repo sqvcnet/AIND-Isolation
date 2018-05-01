@@ -133,7 +133,7 @@ def main():
         Agent(AlphaBetaPlayer(score_fn=custom_score), "AB_Custom"),
         Agent(AlphaBetaPlayer(score_fn=custom_score_2), "AB_Custom_2"),
         Agent(AlphaBetaPlayer(score_fn=custom_score_3), "AB_Custom_3"),
-        Agent(AlphaBetaPlayer(score_fn=custom_score_4), "AB_Custom_4")
+        # Agent(AlphaBetaPlayer(score_fn=custom_score_4), "AB_Custom_4")
     ]
 
     # Define a collection of agents to compete against the test agents
